@@ -17,6 +17,8 @@ struct Model {
     circles: Vec<(f32, Point, Line)>,
     lines: Vec<Line>,
     node_size: f32,
+
+    segment_or_circle: bool,
 }
 
 fn main() {
@@ -37,6 +39,7 @@ fn model(app: &App) -> Model {
         mouse_down: true,
         lines: vec![],
         node_size: 5.0,
+        segment_or_circle: false,
     }
 }
 
@@ -52,6 +55,7 @@ fn update(app: &App, model: &mut Model, update: Update) {
             ui.label("radius");
             ui.add(egui::Slider::new(&mut model.circle_radius, 50.0..=2000.0));
             ui.add(egui::Slider::new(&mut model.node_size, 0.1..=10.0));            
+            ui.add(egui::Checkbox::new(&mut model.segment_or_circle, "Show full circle"));            
     });}
     // draw lines with the mouse
     draw_lines(&app, &app.draw(), model, 255);
@@ -119,8 +123,13 @@ fn view(app: &App, model: &Model, frame: Frame) {
 
     // draw segments of the perpendicular circles that range from one point_a to point_b
     for circle in &model.circles {
-        let segments = generate_segment(circle.0, circle.1, circle.2.start, circle.2.end);
-        draw.polyline().points(segments).color(Rgb8::new(97,189,172));
+
+        if !model.segment_or_circle{
+            let segments = generate_segment(circle.0, circle.1, circle.2.start, circle.2.end);
+            draw.polyline().points(segments).color(Rgb8::new(97,189,172));
+        } else {
+            draw.ellipse().radius(circle.0).xy(circle.1.pos).no_fill().stroke_color(Rgb8::new(86,82,171)).stroke_weight(1.0);
+        }
     }
 
 
@@ -166,17 +175,17 @@ fn view(app: &App, model: &Model, frame: Frame) {
 fn draw_lines<'a>(app: &App, draw: &Draw, model: &mut Model, sections: u32){
 
 
-    let mut touching_points: Vec<(&Point, usize)> = Vec::new();
+    let mut touching_points: Vec<(Point, usize)> = Vec::new();
     let mut length:usize = 0;
-
-    for l in 0..model.lines.len() {
+    let clone_help = model.lines.clone();
+    for l in 0..clone_help.len() {
 
         if model.lines[l].start.pos.distance(app.mouse.position()) < model.node_size {
-            touching_points.push((&model.lines[l].start, l));
+            touching_points.push((clone_help[l].start, l));
             length+=1;
         }
         if model.lines[l].end.pos.distance(app.mouse.position()) < model.node_size {
-            touching_points.push((&model.lines[l].end, l));
+            touching_points.push((clone_help[l].end, l));
             length+=1;
         }
     }
@@ -223,7 +232,7 @@ fn draw_lines<'a>(app: &App, draw: &Draw, model: &mut Model, sections: u32){
 
     // remove line thats touching
     if app.mouse.buttons.right().is_down() && model.lines.len() > 0 && length > 0 && !app.mouse.buttons.left().is_down() {
-        model.lines.pop();
+        model.lines.remove(touching_points[0].1);
         
     }
 }

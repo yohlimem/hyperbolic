@@ -28,32 +28,32 @@ impl Line {
         Point::from(vec2((self.start.pos.x + self.end.pos.x) / 2.0, (self.start.pos.y + self.end.pos.y) / 2.0))
     }
 
-    pub fn function(&self) -> Box<dyn Fn(f32) -> f32> {
-        let m = (self.end.pos.y - self.start.pos.y) / (self.end.pos.x - self.start.pos.x);
-        let b = self.start.pos.y - m * self.start.pos.x;
+    pub fn function(&self) -> Box<dyn Fn(f64) -> f64> {
+        let m = (self.end.pos.y as f64 - self.start.pos.y as f64) / (self.end.pos.x as f64 - self.start.pos.x as f64);
+        let b = self.start.pos.y as f64 - m * self.start.pos.x as f64;
         
-        Box::new(move |x| m * x + b) as Box<dyn Fn(f32) -> f32>
+        Box::new(move |x| m * x + b) as Box<dyn Fn(f64) -> f64>
 
     }
-    pub fn function_to_line(fx: &Box<dyn Fn(f32) -> f32>, x1: f32, x2: f32) -> Line {
+    pub fn function_to_line(fx: &Box<dyn Fn(f64) -> f64>, x1: f64, x2: f64) -> Line {
         // convert a function (mx+b) to a line object
-        let start = Point::from(vec2(x1, fx(x1)));
-        let end = Point::from(vec2(x2, fx(x2)));
+        let start = Point::from(vec2(x1 as f32, fx(x1) as f32));
+        let end = Point::from(vec2(x2 as f32, fx(x2) as f32));
         Line::from_points(start, end)
 
     }
 
-    pub fn tangent_function(&self) -> Box<dyn Fn(f32) -> f32> {
-        let m = -(self.end.pos.x - self.start.pos.x) / (self.end.pos.y - self.start.pos.y); // inverse of the slope
-        let b = self.end.pos.y - m * self.end.pos.x; // y = mx + b -> y - mx = b -> 
+    pub fn tangent_function(&self) -> Box<dyn Fn(f64) -> f64> {
+        let m:f64 = -(self.end.pos.x - self.start.pos.x) as f64 / (self.end.pos.y - self.start.pos.y) as f64; // inverse of the slope
+        let b:f64 = self.end.pos.y as f64 - m * self.end.pos.x as f64; // y = mx + b -> y - mx = b -> 
         
-        Box::new(move |x| m * x + b) as Box<dyn Fn(f32) -> f32>
+        Box::new(move |x| m * x + b) as Box<dyn Fn(f64) -> f64>
     }
-    pub fn tangent_function_from(&self, point: Vec2) -> Box<dyn Fn(f32) -> f32> {
-        let m = -(self.end.pos.x - self.start.pos.x) / (self.end.pos.y - self.start.pos.y); // inverse of the slope
-        let b = point.y - m * (point.x); // y = mx + b -> y - mx = b -> 
+    pub fn tangent_function_from(&self, point: Vec2) -> Box<dyn Fn(f64) -> f64> {
+        let m = -(self.end.pos.x as f64 - self.start.pos.x as f64) / (self.end.pos.y as f64 - self.start.pos.y as f64); // inverse of the slope
+        let b = point.y as f64 - m * (point.x as f64); // y = mx + b -> y - mx = b -> 
         
-        Box::new(move |x| m * x + b) as Box<dyn Fn(f32) -> f32>
+        Box::new(move |x| m * x + b) as Box<dyn Fn(f64) -> f64>
     }
 
 

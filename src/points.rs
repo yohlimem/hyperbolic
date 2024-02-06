@@ -37,10 +37,10 @@ impl Point {
         }
     }
 
-    pub fn draw(&self, draw: &Draw, string: Option<&str>) {
+    pub fn draw(&self, draw: &Draw, size: f32, string: Option<&str>) {
         draw.ellipse()
             .xy(self.pos)
-            .radius(10.0)
+            .radius(size)
             .color(GRAY);
         if let Some(str) = string {
             
